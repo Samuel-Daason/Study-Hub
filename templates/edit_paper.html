@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <title>Edit Paper - {{ paper.name }}</title>
+</head>
+<body>
+    <header>
+        <h1>Edit Paper - {{ paper.name }}</h1>
+        <a href="{{ url_for('catalogue_routes.view_papers', subject_name=subject_name) }}">Back to {{ subject_name }} Papers</a>
+    </header>
+    
+    <main>
+        <form action="{{ url_for('catalogue_routes.edit_paper', paper_id=paper.id) }}" method="POST" enctype="multipart/form-data">
+            <div>
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" value="{{ paper.name }}" required>
+            </div>
+
+            <div>
+                <label for="description">Description</label>
+                <textarea id="description" name="description" required>{{ paper.description }}</textarea>
+            </div>
+
+            <div>
+                <label for="link">Current Paper Link</label>
+                <a href="{{ url_for('static', filename='papers/' + paper.link) }}" target="_blank">{{ paper.link }}</a>
+            </div>
+
+            <div>
+                <label for="link">New File (Optional)</label>
+                <input type="file" id="file" name="file">
+            </div>
+
+            <button type="submit">Save Changes</button>
+        </form>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 HSC Papers Catalogue</p>
+    </footer>
+</body>
+</html>
