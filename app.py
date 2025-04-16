@@ -5,6 +5,8 @@ from catalogue_routes import catalogue_routes, view_papers, load_data  # Import 
 
 app = Flask(__name__)
 
+#Testing the commit feature
+
 # Determine the base directory of the application
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
