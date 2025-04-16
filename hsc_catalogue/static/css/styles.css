@@ -1,0 +1,915 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+header {
+    position: relative; /* Allows for absolute positioning of elements inside */
+    text-align: center;
+    padding: 1em;
+    background-color: #003366;
+    color: white;
+}
+
+footer {
+    text-align: center;
+    padding: 1em;
+    background-color: #003366;
+    color: white;
+    margin-top: auto;
+}
+
+.catalogue-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Increased the min-width to give more space */
+    gap: 1.5em; /* Increased gap between items */
+    padding: 2em; /* Added more padding around the grid */
+}
+
+.catalogue-item {
+    position: relative;
+    padding: 20px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    text-align: center;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    font-size: 18px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Ensure content is spaced out */
+    min-height: 200px;  /* Ensure card has a minimum height */
+    cursor: pointer; /* Makes the card clickable */
+}
+
+.catalogue-item:hover {
+    transform: scale(1.05); /* Slightly enlarge the card on hover */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2); /* Increase shadow on hover */
+}
+
+.catalogue-item .content {
+    flex-grow: 1;  /* Makes the content area take up all available space */
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow: hidden;
+}
+
+.catalogue-item .content h3 {
+    font-size: 1.2em; /* Adjust this value to make the paper name larger */
+    font-weight: bold; /* Optional, if you want the paper name to stand out more */
+    margin-bottom: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.catalogue-item .content p {
+    font-size: 1.2em; /* Adjust this value to make the paper description larger */
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    box-orient: vertical;
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+}
+
+/* Subject Cards */
+.catalogue-item h2 {
+    font-size: 1.2em; /* Adjusted size to match paper cards */
+    margin-bottom: 10px;
+}
+
+.catalogue-item p {
+    font-size: 1.2em; /* Consistent size for subject descriptions */
+    margin-bottom: 15px;
+}
+
+/* Paper Cards */
+.catalogue-item .content p {
+    font-size: 1.2em; /* Ensuring both subject and paper cards have the same font size */
+}
+
+.catalogue-item .content h3 {
+    font-size: 1.2em; /* Adjust this value to make the paper name larger */
+    font-weight: bold; /* Optional, if you want the paper name to stand out more */
+}
+
+.catalogue-item .content p {
+    font-size: 1.2em; /* Adjust this value to make the paper description larger */
+}
+
+
+/* Switch Styles */
+.switch {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: inline-block;
+    width: 60px; /* Keep a base width */
+    height: 34px; /* Base height */
+    max-width: 80px; /* Max width for larger screens */
+    min-width: 40px; /* Min width for smaller screens */
+    transition: all 0.3s ease-in-out;
+}
+
+/* Make the input checkbox invisible */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Slider itself */
+.slider {
+    position: relative;
+    cursor: pointer;
+    display: block;
+    width: 100%; /* Full width of the switch */
+    height: 100%; /* Full height of the switch */
+    background-color: #ccc;
+    border-radius: 34px;
+    transition: background-color 0.4s ease; /* Smooth background transition */
+}
+
+/* Slider Circle (the knob) */
+.slider:before {
+    position: absolute;
+    content: "";
+    width: 26px; /* Fixed width for the circle */
+    height: 26px; /* Fixed height for the circle */
+    left: 4px; /* Position the circle */
+    bottom: 4px; /* Position the circle */
+    background-color: white;
+    border-radius: 50%; /* Ensures the circle is perfectly round */
+    transition: transform 0.4s ease; /* Smooth transition for circle movement */
+}
+
+/* Change the background color of the slider when checked */
+input:checked + .slider {
+    background-color: #2196F3; /* Dark background when checked */
+}
+
+/* Move the circle to the right when checked */
+input:checked + .slider:before {
+    transform: translateX(26px); /* Move circle to the right */
+}
+
+/* Media Query for smaller screens */
+@media (max-width: 600px) {
+    .switch {
+        width: 50px; /* Smaller width on smaller screens */
+        height: 30px; /* Smaller height on smaller screens */
+    }
+
+    .slider:before {
+        width: 20px; /* Smaller circle size on smaller screens */
+        height: 20px; /* Smaller circle size */
+    }
+}
+
+
+/* Edit Icon Styling */
+.btn-edit-subject {
+    background: none !important;
+    border: none !important;
+    color: #333 !important;
+    font-size: 1.3em; /* Ensure consistent icon size */
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 0;
+    outline: none;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+/* Edit Text (appears on hover) */
+.edit-text {
+    position: absolute;
+    top: -25px; /* Position the text just above the icon */
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0; /* Hide text by default */
+    visibility: hidden; /* Ensure text is not interactive */
+    color: #333; /* Match the icon color */
+    font-size: 14px; /* Adjust text size */
+    white-space: nowrap; /* Prevent text from wrapping to the next line */
+    transition: opacity 0.3s ease, visibility 0.3s ease; /* Smooth transition */
+}
+
+.btn-edit-subject:hover .edit-text {
+    opacity: 1; /* Show text on hover */
+    visibility: visible; /* Make it visible */
+}
+
+/* Delete Icon Styling */
+.btn-delete-subject {
+    background: none !important;
+    border: none !important;
+    color: #333 !important;
+    font-size: 1.3em;
+    cursor: pointer;
+    align-self: flex-end;
+    margin-top: 10px;
+    padding: 0;
+    outline: none;
+    z-index: 1100;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-subject:hover {
+    color: #555; /* Lighter gray when hovering */
+    transform: scale(1.1); /* Slightly scale up the icon */
+}
+
+/* Delete Text (appears on hover) */
+.delete-text {
+    position: absolute;
+    bottom: -25px; /* Position the text just below the icon */
+    left: 50%;
+    transform: translateX(-50%); /* Center the text horizontally */
+    opacity: 0; /* Hide text by default */
+    visibility: hidden; /* Ensure text is not interactive */
+    color: #333; /* Match the icon color */
+    font-size: 14px; /* Adjust text size */
+    white-space: nowrap; /* Prevent text from wrapping to the next line */
+    transition: opacity 0.3s ease, visibility 0.3s ease; /* Smooth transition */
+}
+
+.btn-delete-subject:hover .delete-text {
+    opacity: 1; /* Show text on hover */
+    visibility: visible; /* Make it visible */
+}
+
+/* Dark Mode Styles */
+body.dark-mode {
+    background-color: #121212; /* Dark background */
+    color: #cccccc; /* Light text color */
+}
+
+body.dark-mode header,
+body.dark-mode footer {
+    background-color: #1e1e1e; /* Dark header/footer background */
+}
+
+body.dark-mode .catalogue-item {
+    background-color: #2a2a2a; /* Dark item background */
+    border-color: #444; /* Darker border */
+}
+
+/* Dark Mode Icon Styles */
+body.dark-mode .btn-edit-subject i,
+body.dark-mode .btn-delete-subject i {
+    color: #cccccc; /* Softer light gray for icons in dark mode */
+}
+
+body.dark-mode .btn-edit-subject:hover,
+body.dark-mode .btn-delete-subject:hover {
+    color: #aaa; /* Lighter gray on hover for better visibility */
+}
+
+/* Hover Text Colors */
+body.dark-mode .btn-edit-subject:hover .edit-text,
+body.dark-mode .btn-delete-subject:hover .delete-text {
+    color: #aaa; /* Change the text color on hover */
+}
+
+.add-subject-container {
+    position: absolute;
+    bottom: 10px;
+    left: 20px;
+}
+
+/* Ensure the button has no background, border, or outline */
+.btn-add-subject {
+    color: white;  /* White text color */
+    text-decoration: none;  /* Remove underline */
+    font-size: 16px;
+    font-weight: bold;
+    padding: 5px 0;  /* Optional, to add vertical padding */
+    border: none;  /* No border */
+    background: none;  /* No background */
+    outline: none;  /* Remove outline */
+}
+
+/* Hover effect to add the white underline */
+.btn-add-subject:hover {
+    color: white;  /* Text stays white on hover */
+    text-decoration: underline;  /* Add underline */
+    text-decoration-color: white;  /* Ensure underline is white */
+    border: none;  /* Ensure no border on hover */
+    background: none;  /* Ensure no background color on hover */
+}
+
+/* Remove focus, active, and hover-related styles that might add the green box */
+.btn-add-subject:focus,
+.btn-add-subject:active {
+    outline: none;
+    border: none;
+}
+
+body.dark-mode .catalogue-item {
+    background-color: #2a2a2a; /* Darker background for the card in dark mode */
+    color: #cccccc; /* Light text color for the card */
+    border-color: #444; /* Darker border for the card */
+}
+
+body.dark-mode .catalogue-item h2,
+body.dark-mode .catalogue-item p {
+    color: white; /* Light text color for headings and paragraphs */
+}
+
+body.dark-mode .catalogue-item a {
+    color: white; /* Blue link color in dark mode */
+}
+
+body.dark-mode .catalogue-item:hover {
+    background-color: #333; /* Slightly lighter background on hover */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3); /* Enhance hover effect */
+}
+
+/* Dark Mode Icon Styles */
+body.dark-mode .btn-edit-paper i,
+body.dark-mode .btn-delete-paper i {
+    color: white; /* Softer light gray for icons in dark mode */
+}
+
+body.dark-mode .btn-edit-subject:hover,
+body.dark-mode .btn-delete-subject:hover {
+    color: white; /* Lighter gray on hover for better visibility */
+}
+
+/* Hover Text Colors */
+body.dark-mode .btn-edit-paper:hover .edit-text,
+body.dark-mode .btn-delete-paper:hover .delete-text {
+    color: white; /* Change the text color on hover */
+}
+
+/* Light Mode Styles (No Changes) */
+body.light-mode .modal {
+    background-color: #fff; /* Light background for the modal */
+    color: #333; /* Dark text color inside the modal */
+    border-color: #ccc; /* Lighter border for the modal */
+}
+
+body.light-mode .modal-header {
+    background-color: #f1f1f1; /* Light header background */
+    color: #333; /* Dark text for the modal header */
+}
+
+body.light-mode .modal-body {
+    background-color: #fff; /* Light background for the body of the modal */
+    color: #333; /* Dark text color */
+}
+
+body.light-mode .modal-footer {
+    background-color: #f1f1f1; /* Light footer background */
+}
+
+body.light-mode .form-control {
+    background-color: #fff; /* Light input field background */
+    color: #333; /* Dark text in input fields */
+    border: 1px solid #ccc; /* Lighter border for input fields */
+}
+
+body.light-mode .form-control:focus {
+    border-color: #2196F3; /* Blue focus border */
+    background-color: #e9e9e9; /* Slightly lighter input field on focus */
+}
+
+body.light-mode .btn-primary {
+    background-color: #2196F3; /* Blue button background */
+    border-color: #1976D2; /* Darker blue button border */
+}
+
+body.light-mode .btn-primary:hover {
+    background-color: #1976D2; /* Darker blue button hover effect */
+}
+
+body.light-mode .close {
+    color: #333; /* Dark close button color */
+}
+
+body.light-mode .close:hover {
+    color: #000; /* Darker close button hover effect */
+}
+
+/* Dark Mode Specific Modal Styles */
+body.dark-mode .modal {
+    background-color: rgba(18, 18, 18, 0.9); /* Darker semi-transparent background for dark mode */
+    color: #fff !important;
+}
+
+body.dark-mode .modal-content {
+    background-color: #333 !important; /* Darker background for modal content in dark mode */
+    color: #ccc; /* Lighter text in dark mode */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Darker shadow for dark mode */
+}
+
+/* Additional Styles */
+body.dark-mode .close {
+    color: #ccc; /* Lighter close button for dark mode */
+}
+
+body.dark-mode .back-home-container:hover   .edit-text{
+    opacity: 1; /* Show text on hover */
+    visibility: visible; /* Make it visible */
+    font-size: 16px; /* Increase font size for better visibility */
+    color: white; /* Keep the color for the text */
+    padding: 5px;  /* Add padding around the text for better readability */
+}
+
+/* Modal Styles */
+.modal {
+    display: none; /* Hide the modal by default */
+    position: fixed; /* Position it fixed on the screen */
+    z-index: 1050; /* Ensure it's above other content */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    background-color: rgba(0, 0, 0, 0.5); /* Dark semi-transparent background */
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal-content {
+    position: relative;
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 30px;
+    border-radius: 12px;
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    font-family: 'Arial', sans-serif;
+}
+
+/* The Close Button (X) */
+.close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    transition: color 0.3s ease;
+    cursor: pointer; /* Ensure the cursor is a pointer */
+}
+
+.close:hover,
+.close:focus {
+    color: #333;
+    text-decoration: none;
+}
+
+
+/* Button Styles (for the modal) */
+button {
+    padding: 12px 20px; /* Increased padding for buttons */
+    background-color: #007BFF; /* Blue button background */
+    color: white;
+    border: none;
+    border-radius: 8px; /* Rounded button edges */
+    cursor: pointer;
+    width: 100%; /* Full width button */
+    font-size: 16px; /* Larger text for buttons */
+    transition: background-color 0.3s ease; /* Smooth background transition */
+}
+
+button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+
+/* Form input styles */
+input[type="text"],
+textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus,
+textarea:focus {
+    border-color: #4CAF50; /* Green border on focus */
+    outline: none;
+}
+
+/* Add a subtle fade-in effect when modal opens */
+.modal.show {
+    display: block;
+    opacity: 1;
+}
+
+/* Optional: Background color change for input and textarea focus */
+input[type="text"]:focus,
+textarea:focus {
+    background-color: #f1f1f1; /* Lighter background on focus */
+}
+
+
+
+/* Header styles */
+header {
+    position: relative;  /* Ensures elements inside it are positioned relative to the header */
+    padding: 20px;
+}
+
+/* Wrapper for Back to Home icon and text */
+.back-home-container {
+    position: absolute; /* Use absolute positioning */
+    top: 30px;  /* Distance from the bottom of the header */
+    left: 30px;    /* Distance from the left of the header */
+    display: inline-flex;  /* Use inline-flex to align icon and text horizontally */
+    align-items: center;  /* Vertically center the icon and text */
+}
+
+/* Positioning the back home icon */
+.back-home-icon {
+    font-size: 24px; /* Size of the icon */
+    color: white;    /* Icon color */
+    text-decoration: none; /* Remove underline */
+    transition: color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+    margin-right: 8px;  /* Space between the icon and the text */
+}
+
+/* Hover effect */
+.back-home-container:hover .back-home-icon {
+    color: #333;  /* Change color on hover */
+    transform: scale(1.1); /* Slightly enlarge the icon */
+    box-shadow: none; /* Remove the box-shadow around the icon on hover */
+}
+
+/* Edit Text (appears on hover) for "Back to Home" */
+.back-home-container:hover .edit-text {
+    opacity: 1; /* Show text on hover */
+    visibility: visible; /* Make it visible */
+    font-size: 16px; /* Increase font size for better visibility */
+    color: black; /* Keep the color for the text */
+    padding: 5px;  /* Add padding around the text for better readability */
+}
+
+/* Positioning the text next to the icon */
+.edit-text {
+    opacity: 0; /* Hide text by default */
+    visibility: hidden; /* Ensure text is not interactive */
+    font-size: 14px; /* Adjust text size */
+    color: black; /* Match the hover icon color */
+    white-space: nowrap; /* Prevent text from wrapping */
+    transition: opacity 0.3s ease, visibility 0.3s ease; /* Smooth transition */
+}
+
+
+/* Add Paper button styles */
+.add-paper-btn {
+    color: white;  /* White text color */
+    text-decoration: none;  /* Remove underline */
+    font-size: 16px;
+    font-weight: bold;
+    padding: 5px 0;  /* Optional, to add vertical padding */
+    border: none;  /* No border */
+    background: none;  /* No background */
+    outline: none;  /* Remove outline */
+    position: absolute;
+    bottom: 10px; /* Distance from the bottom of the header */
+    left: 50%;  /* Center horizontally */
+    transform: translateX(-50%); /* Adjust for exact centering */
+}
+
+.add-paper-btn:hover {
+    color: white;  /* Text stays white on hover */
+    text-decoration: underline;  /* Add underline */
+    text-decoration-color: white;  /* Ensure underline is white */
+    border: none;  /* Ensure no border on hover */
+    background: none;  /* Ensure no background color on hover */
+}
+
+.add-paper-btn:focus,
+.add-paper-btn:active {
+    outline: none;
+    border: none;
+}
+
+
+/* Edit Icon Styling */
+.btn-edit-paper {
+    background: none !important;
+    border: none !important;
+    color: #333 !important;
+    font-size: 1.3em; /* Ensure consistent icon size */
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 0;
+    outline: none;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+/* Edit Text (appears on hover) */
+.edit-text {
+    position: absolute;
+    top: -25px; /* Position the text just above the icon */
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0; /* Hide text by default */
+    visibility: hidden; /* Ensure text is not interactive */
+    color: #333; /* Match the icon color */
+    font-size: 14px; /* Adjust text size */
+    white-space: nowrap; /* Prevent text from wrapping to the next line */
+    transition: opacity 0.3s ease, visibility 0.3s ease; /* Smooth transition */
+}
+
+.btn-edit-paper:hover .edit-text {
+    opacity: 1; /* Show text on hover */
+    visibility: visible; /* Make it visible */
+}
+
+/* Delete Button Styling (inside form) */
+.btn-delete-paper {
+    background: none !important;
+    border: none !important;
+    color: #333 !important;
+    font-size: 1.3em; /* Ensure consistent icon size */
+    cursor: pointer;
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    padding: 0;
+    outline: none;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+/* Hover effect for the delete button */
+.btn-delete-paper:hover {
+    color: #555; /* Lighter gray when hovering */
+    transform: scale(1.1); /* Slightly scale up the icon */
+}
+
+/* Delete Text (appears on hover) */
+.delete-text {
+    position: absolute;
+    bottom: -25px; /* Position the text just below the icon */
+    left: 50%;
+    transform: translateX(-50%); /* Center the text horizontally */
+    opacity: 0; /* Hide text by default */
+    visibility: hidden; /* Ensure text is not interactive */
+    color: #333; /* Match the icon color */
+    font-size: 14px; /* Adjust text size */
+    white-space: nowrap; /* Prevent text from wrapping to the next line */
+    transition: opacity 0.3s ease, visibility 0.3s ease; /* Smooth transition */
+}
+
+.btn-delete-paper:hover .delete-text {
+    opacity: 1; /* Show text on hover */
+    visibility: visible; /* Make it visible */
+}
+
+
+/* Enlarge on Hover Effect for the Paper Cards */
+.catalogue-item {
+    position: relative;
+    padding: 15px;
+    background-color: #f8f8f8;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.catalogue-item:hover {
+    transform: scale(1.05); /* Enlarge on hover */
+}
+
+.catalogue-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.content h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.content p {
+    font-size: 14px;
+    color: #666;
+}
+
+.delete-form {
+    display: inline;
+}
+
+.enlarge-on-hover:hover {
+    transform: scale(1.1);
+}
+
+
+/* Add Paper Modal styles */
+#addPaperModal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Modal content box */
+#addPaperModal .modal-content {
+    background-color: #fff;
+    margin: auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 700px; /* Increase width */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box; /* Ensure padding doesn't cause overflow */
+}
+
+/* Close button (X) */
+#addPaperModal .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+#addPaperModal .close:hover,
+#addPaperModal .close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Form Fields for Add Paper */
+#addPaperModal .form-field {
+    margin-bottom: 20px; /* Increased spacing */
+}
+
+#addPaperModal .form-field label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+#addPaperModal .form-field input,
+#addPaperModal .form-field textarea {
+    width: 100%;
+    padding: 12px; /* Increased padding for larger fields */
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box; /* Prevent overflow */
+}
+
+/* Ensure the file input looks consistent */
+#addPaperModal .form-field input[type="file"] {
+    padding: 10px;
+}
+
+/* Submit button styling */
+#addPaperModal .submit-btn {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+}
+
+#addPaperModal .submit-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Dark Mode Specific Modal Styles */
+body.dark-mode .modal {
+    background-color: rgba(18, 18, 18, 0.9); /* Darker semi-transparent background for dark mode */
+}
+
+body.dark-mode .modal-content {
+    background-color: #121212; /* Darker background for modal content */
+    color: #e0e0e0; /* Lighter text for contrast */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Darker shadow */
+}
+
+/* Dark Mode - Close button */
+body.dark-mode .close {
+    color: #ccc; /* Lighter close button color */
+}
+
+body.dark-mode .close:hover,
+body.dark-mode .close:focus {
+    color: #fff; /* White close button on hover */
+}
+
+/* Dark Mode Form Fields */
+body.dark-mode .form-field input,
+body.dark-mode .form-field textarea {
+    background-color: #333; /* Dark background for form fields */
+    color: #e0e0e0; /* Light text color */
+    border: 1px solid #555; /* Lighter border */
+}
+
+body.dark-mode .form-field input[type="file"] {
+    background-color: #333; /* Darker background for file input */
+    color: white; /* Lighter text color */
+}
+
+/* Dark Mode Labels (Paper Name, Description, etc.) */
+body.dark-mode .form-field label {
+    color: #e0e0e0; /* Lighter label text color for better contrast */
+}
+
+/* Dark Mode Submit Button */
+body.dark-mode .submit-btn {
+    background-color: #4CAF50; /* Green background for the button */
+    color: white; /* White text for the button */
+    border: 1px solid #ddd; /* Lighter border */
+}
+
+body.dark-mode .submit-btn:hover {
+    background-color: #45a049; /* Slightly darker green on hover */
+}
+
+/* Dark Mode Close Button Hover */
+body.dark-mode .close:hover {
+    color: white; /* White close button color on hover */
+}
+
+/* Dark Mode Header (H2) */
+body.dark-mode .modal-content h2 {
+    color: #fff; /* White text color for h2 */
+}
+
+/* Dark Mode Modal Body Text */
+body.dark-mode .modal-body p {
+    color: #e0e0e0; /* Light color for body text in the modal */
+}
+
+/* Delete button for papers */
+.btn-delete-paper {
+    background: none !important;
+    border: none !important;
+    color: #333 !important;
+    font-size: 1.3em;
+    cursor: pointer;
+    padding: 5px;
+    margin: 5px;
+    outline: none;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.btn-delete-paper:hover {
+    color: #ff0000 !important;
+    transform: scale(1.1);
+}
+
+.delete-form {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+}
+
+.delete-text {
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    visibility: hidden;
+    color: #333;
+    font-size: 14px;
+    white-space: nowrap;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.btn-delete-paper:hover .delete-text {
+    opacity: 1;
+    visibility: visible;
+}
