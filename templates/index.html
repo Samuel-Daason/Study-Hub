@@ -7,14 +7,19 @@
     <!-- Link to Font Awesome for Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 
-    <!-- Your existing styles -->
+    <!-- Main styles -->
     <link rel="stylesheet" href="/static/css/styles.css">
+
+    <!-- Slider-Specific Styles -->
+    <link rel="stylesheet" href="/static/css/slider_styles.css">
+
+
     
-    <title>HSC Papers Catalogue</title>
+    <title>Study Hub</title>
 </head>
 <body>
     <header>
-        <h1>HSC Papers Catalogue</h1>
+        <h1>Study Hub</h1>
         <!-- Light/Dark mode toggle slider -->
         <label class="switch">
             <input type="checkbox" id="theme-toggle">
@@ -45,7 +50,7 @@
         <section class="catalogue-grid">
             {% for subject in subjects %}
                 <div class="catalogue-item enlarge-on-hover">
-                    <a href="{{ subject.link }}" class="catalogue-link">
+                    <a href="{{ url_for('catalogue_routes.view_papers', subject_name=subject.name) }}" class="catalogue-link">
                         <div class="content">
                             <h2>{{ subject.name }}</h2>
                             <p>{{ subject.description }}</p>
@@ -75,7 +80,7 @@
     </main>
 
     <footer>
-        <p>&copy; 2024 HSC Papers Catalogue - - Created by Samuel Daason</p>
+        <p>&copy; Study Hub - - Created by Samuel Daason</p>
     </footer>
     
     <!-- Modal for Add Subject -->

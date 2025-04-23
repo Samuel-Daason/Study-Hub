@@ -1,76 +1,75 @@
 from flask import Flask, render_template, send_from_directory, request, redirect
-import json
-import os
-from catalogue_routes import catalogue_routes, view_papers, load_data  # Import the view_papers function
+from models import db, Subject
+from catalogue_routes import catalogue_routes, view_papers
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///catalogue.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-#Testing the commit feature
+# Cascade deletion
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
+import sqlite3
 
-# Determine the base directory of the application
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+@event.listens_for(Engine, "connect")
+def enable_sqlite_foreign_keys(dbapi_connection, connection_record):
+    if isinstance(dbapi_connection, sqlite3.Connection):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON;")
+        cursor.close()
 
-# Construct the absolute path to the JSON file
-CATALOGUE_PATH = os.path.join(BASE_DIR, 'data', 'catalogue.json')
 
-# Load the JSON data globally so it can be accessed by the route functions
-with open(CATALOGUE_PATH) as f:
-    papers_data = json.load(f)
+db.init_app(app)
 
-# Index route (display subjects)
+# Secret Key for runtime and cookies 
+
+app.config['SECRET_KEY'] = '1423'
+
+
+# Home page
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    # Load the catalogue data again (after any edits)
-    catalogue_data = load_data()
-    subjects = catalogue_data['subjects']
+    subjects = Subject.query.all()
 
     if request.method == 'POST':
-        # Print the form data to check if it's being received correctly
-        print(f"Form Data: {request.form}")
-
         subject_name = request.form.get('subject_name')
         subject_description = request.form.get('subject_description')
         subject_id = request.form.get('subject_id')
 
-        # Ensure form data is received correctly
-        print(f"subject_name: {subject_name}, subject_description: {subject_description}")
+        if subject_id:  # Update existing subject
+            subject = Subject.query.get(int(subject_id))
+            if subject:
+                subject.name = subject_name
+                subject.description = subject_description
+        else:  # Create new subject
+            new_subject = Subject(name=subject_name, description=subject_description)
+            db.session.add(new_subject)
 
-        # Find the subject to update (use the subject's ID or name)
-        updated_subject = {
-            "name": subject_name,
-            "description": subject_description
-        }
-
-        # Update the subject data in the catalogue
-        for subject in subjects:
-            if subject['id'] == subject_id:
-                subject['name'] = subject_name
-                subject['description'] = subject_description
-
-        # Save the updated data back to the JSON file
-        with open(CATALOGUE_PATH, 'w') as f:
-            json.dump(catalogue_data, f, indent=4)
-
-        # After adding the subject, redirect back to the index page
+        db.session.commit()
         return redirect('/')
 
-    # Render the index page with the updated subjects
     return render_template('index.html', subjects=subjects)
 
 
-# Register the catalogue blueprint with the app
-app.register_blueprint(catalogue_routes, url_prefix='/catalog')
-
-
+# View all papers in a subject 
 @app.route('/<subject_name>')
 def subject_page(subject_name):
     return view_papers(subject_name)
 
 
+# Serve custom JS
 @app.route('/scripts/<path:path>')
 def send_js(path):
     return send_from_directory('scripts/js', path)
 
+
+# Register paper-related routes
+app.register_blueprint(catalogue_routes, url_prefix='/catalog')
+
+
+# Create the database tables
+with app.app_context():
+    db.create_all()
 
 if __name__ == '__main__':
     app.run(debug=True)

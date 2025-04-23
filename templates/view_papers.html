@@ -5,20 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Add Font Awesome -->
-    <title>{{ subject_name }} Papers</title>
+    <title>{{ subject_name }} Resources</title>
 </head>
 <body>
     <header>
-        <h1>{{ subject_name }} Past Papers</h1>
+        <h1>{{ subject_name }} Resources</h1>
 
-        <!-- Back to Home link -->a
+        <!-- Back to Home link -->
         <a href="{{ url_for('index') }}" class="back-home-container">
             <i class="fas fa-home back-home-icon"></i> <!-- Home icon -->
             <span class="edit-text">Home</span>
         </a>
 
+        <!-- Slider-Specific Styles -->
+        <link rel="stylesheet" href="/static/css/slider_styles.css">
+
         <!-- Add Paper link (inside header) -->
-        <button id="addPaperBtn" class="add-paper-btn">Add Paper</button>
+        <button id="addPaperBtn" class="add-paper-btn">Add Document</button>
     </header>
 
     <!-- Light/Dark mode toggle slider -->
@@ -58,7 +61,7 @@
     </main>
 
     <footer>
-        <p>&copy; 2024 HSC Papers Catalogue - Created by Samuel Daason</p>
+        <p>&copy; Study Hub- Created by Samuel Daason</p>
     </footer>
 
     <script src="/scripts/script.js"></script> <!-- Link to the JavaScript file -->

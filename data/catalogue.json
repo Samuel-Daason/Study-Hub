@@ -43,12 +43,6 @@
             "link": "/business"
         },
         {
-            "id": "5a452e29-f01e-42c5-a4cc-cc48bb6f1e6a",
-            "name": "Study of Rizz",
-            "description": "How to become the Rizzler, Rizzith of Oz, and my personal favourite the Rizz Master - tianna",
-            "link": "/study_of_rizz"
-        },
-        {
             "id": "fc1052dc-e8ba-4be2-abc4-7c4f7b2aa181",
             "name": "CAFS",
             "description": "Community and Family Studies\r\n",
@@ -59,12 +53,6 @@
             "name": "Physics",
             "description": "papers and resouces",
             "link": "/physics"
-        },
-        {
-            "id": "5934029e-b03e-4d19-9605-7377faa69295",
-            "name": "Alex Ienna Fanpage",
-            "description": "alpha",
-            "link": "/alex_ienna_fanpage"
         },
         {
             "id": "2e6914da-5d95-4244-a654-3894b73e3e30",
@@ -144,29 +132,12 @@
             "link": "WIN_20220505_11_02_17_Pro.jpg"
         }
     ],
-    "Study Of Rizz": [
-        {
-            "id": "2cbddb59-b5e1-4186-a65f-dc3e5c6e1c9f",
-            "name": "Ultra Sigma",
-            "description": "Sigma",
-            "link": "Screenshot_2024-11-13_144843.png"
-        }
-    ],
     "Business": [
         {
             "id": "2f47bad1-fca8-4939-b779-7df1fa80a83b",
             "name": "dawwadawdddddddddddddddddddddddddddddddd",
             "description": "dawddawwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
             "link": "we_love_moonbin___we_love_genshin_impact_-_Discord_25_04_2023_9_33_32_PM.png"
-        }
-    ],
-    "Legal": [],
-    "Alex Ienna Fanpage": [
-        {
-            "id": "a94a22d9-cc13-473e-a1ec-75cd56c6243c",
-            "name": "daw",
-            "description": " ",
-            "link": "IMG_1573.PNG"
         }
     ]
 }
