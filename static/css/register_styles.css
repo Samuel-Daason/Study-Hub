@@ -1,0 +1,241 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: url("/static/images/register_background.jpg") no-repeat center center fixed;
+    background-size: cover;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.register-link {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 0.9rem;
+}
+
+.login-container {
+    background: rgba(44, 38, 56, 0.70); /* same colour with 85% opacity */
+    padding: 3.5rem 2.5rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 420px;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    text-align: left;
+}
+
+h1 {
+    margin-top: 0.5rem;
+    font-size: 2.3rem;
+    color: #ccc;
+}
+
+.subtitle {
+    font-size: 0.95rem;
+    color: #ccc;
+    margin-top: 0.2rem;
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+label {
+    margin: 0.5rem 0 0.2rem;
+    font-weight: normal;
+    color: white;
+}
+
+input {
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    color: white;
+    background-color: #3c364d;
+    width: 100%;
+}
+
+input::placeholder {
+    color: #ccc;
+    opacity: 1;
+}
+
+button {
+    background-color: #6c53b5;
+    color: white;
+    padding: 0.6rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 1rem;
+    align-self: center;
+    min-width: 100%;
+}
+
+button:hover {
+    background-color: #463b73;
+}
+
+/* New styles for divider and register section */
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 1.8rem 0 0.6rem;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #888;
+    opacity: 0.4;
+}
+
+.divider span {
+    padding: 0 0.75rem;
+    font-size: 0.85rem;
+    color: #ccc;
+}
+
+.register-now {
+    text-align: center;
+    margin-top: 0.2rem;
+}
+
+.register-now a {
+    color: #b49eff;
+    font-size: 0.95rem;
+    text-decoration: none;
+}
+
+.register-now a:hover {
+    text-decoration: underline;
+}
+
+/* Flash message styling */
+.flash-messages {
+    margin-bottom: 1.5rem;
+}
+
+/* Flash message styling */
+.flash-messages {
+    margin-bottom: 1.5rem;
+}
+
+.flash-message {
+    padding: 0.5rem 1rem;  /* Reduced padding */
+    margin-bottom: 1.2rem;
+    border-radius: 8px;
+    font-size: 0.85rem;  /* Slightly smaller text */
+    text-align: center;
+}
+
+.flash-message.error {
+    background-color: #c0392b;
+    color: white;
+    padding: 0.5rem 1rem;  /* Reduced padding for smaller box */
+    font-size: 0.85rem;  /* Smaller text for a more compact look */
+}
+
+/* Input error styling */
+input.error {
+    border: 2px solid #e74c3c !important;
+    animation: shake 0.3s ease-in-out;
+}
+
+/* Animation for shaking input fields */
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+
+/* Additional styling for input fields (same as in the login form) */
+input {
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    color: white;
+    background-color: #3c364d;
+    width: 100%;
+}
+
+input.error {
+    border: 2px solid #e74c3c !important;  /* Red border on error */
+    animation: shake 0.3s ease-in-out;  /* Shake animation on error */
+}
+
+/* Flash message container */
+.flash-messages {
+    margin-bottom: 1rem;
+}
+
+/* Success message */
+.flash-message.success {
+    background-color: #27ae60;
+    color: white;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    border: 1px solid #1e8449;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Error message */
+.flash-message.error {
+    background-color: #c0392b;
+    color: white;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    border: 1px solid #922b21;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.password-container {
+    position: relative;
+    width: 100%;
+}
+
+.password-container input {
+    padding-right: 2.5rem; /* Ensure space for the eye icon */
+    width: 100%;
+    box-sizing: border-box; /* Ensures padding is included in the width */
+}
+
+.password-container i {
+    position: absolute;
+    top: 33%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #aaa;
+}
+

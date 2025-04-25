@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/register_styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Font Awesome -->
+</head>
+<body>
+    <div class="login-container">
+        <h1>Create your account</h1>
+        <p class="subtitle">Please fill in your details to register</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <label for="email">Email</label>
+            <input type="email" name="email" placeholder="Enter your email" required class="{{ 'error' if 'email' in form_errors else '' }}">
+
+            <label for="password">Password</label>
+            <div class="password-container">
+                <input type="password" name="password" id="password" placeholder="Create a password" required class="{{ 'error' if 'password' in form_errors else '' }}">
+                <i class="far fa-eye" id="togglePassword"></i>
+            </div>
+
+            <label for="confirm_password">Confirm Password</label>
+            <div class="password-container">
+                <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm your password" required class="{{ 'error' if 'confirm_password' in form_errors else '' }}">
+                <i class="far fa-eye" id="toggleConfirmPassword"></i>
+            </div>
+
+            <button type="submit">Register</button>
+        </form>
+
+        <div class="divider">
+            <span>Already have an account?</span>
+        </div>
+        <div class="register-now">
+            <a href="{{ url_for('catalogue_routes.login') }}">Login here</a>
+        </div>
+    </div>
+
+    <script>
+        // Toggle password visibility
+        const togglePassword = document.getElementById("togglePassword");
+        const passwordField = document.getElementById("password");
+
+        togglePassword.addEventListener("click", function () {
+            const type = passwordField.getAttribute("type") === "password" ? "text" : "password";
+            passwordField.setAttribute("type", type);
+            this.classList.toggle("fa-eye-slash");
+        });
+
+        const toggleConfirmPassword = document.getElementById("toggleConfirmPassword");
+        const confirmPasswordField = document.getElementById("confirm_password");
+
+        toggleConfirmPassword.addEventListener("click", function () {
+            const type = confirmPasswordField.getAttribute("type") === "password" ? "text" : "password";
+            confirmPasswordField.setAttribute("type", type);
+            this.classList.toggle("fa-eye-slash");
+        });
+    </script>
+</body>
+</html>

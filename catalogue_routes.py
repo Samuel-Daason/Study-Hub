@@ -1,7 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify
-from models import db, Subject, Paper 
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash, Request
+from models import db, Subject, Paper, User
 import os
 from werkzeug.utils import secure_filename
+from flask_login import login_required, current_user, login_user, logout_user
+from werkzeug.security import check_password_hash, generate_password_hash
 
 # Define the blueprint
 catalogue_routes = Blueprint('catalogue_routes', __name__)
@@ -17,50 +19,6 @@ ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mov', 'avi', '
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Add paper route
-@catalogue_routes.route('/add_paper/<subject_name>', methods=['GET', 'POST'])
-def add_paper(subject_name):
-    subject = Subject.query.filter_by(name=subject_name).first_or_404()
-
-    if request.method == 'POST':
-        # Get form data
-        name = request.form['name']
-        description = request.form['description']
-        file = request.files['file']
-
-        # Validate that file is selected
-        if not name or not description or not file:
-            return "All fields (name, description, and file) are required.", 400
-
-        # Check if the uploaded file type is allowed
-        if file and allowed_file(file.filename):
-            try:
-                # Save the file to the upload folder
-                filename = secure_filename(file.filename)
-                file_path = os.path.join(UPLOAD_FOLDER, filename)
-                file.save(file_path)
-
-                # Create and add the new paper to the database
-                new_paper = Paper(
-                    name=name,
-                    description=description,
-                    link=filename,
-                    subject_id=subject.id
-                )
-                db.session.add(new_paper)
-                db.session.commit()
-
-                # Redirect to the page displaying the papers for that subject
-                return redirect(url_for('catalogue_routes.view_papers', subject_name=subject_name))
-            except Exception as e:
-                # Handle potential errors during file saving or database operations
-                return f"An error occurred while saving the paper: {str(e)}", 500
-        else:
-            return "Invalid file type. Please upload a valid file.", 400
-
-    # Return the form for adding a new paper
-    return render_template('add_paper.html', subject_name=subject_name)
-
 
 # View paper routes
 @catalogue_routes.route('/<subject_name>')
@@ -73,6 +31,46 @@ def view_papers(subject_name):
 
     # Render the template with the subject name and the list of papers
     return render_template('view_papers.html', subject_name=subject_name, papers=papers)
+
+
+# Add paper route
+@catalogue_routes.route('/add_paper/<subject_name>', methods=['GET', 'POST'])
+@login_required  # Make sure only logged-in users can add papers
+def add_paper(subject_name):
+    subject = Subject.query.filter_by(name=subject_name).first_or_404()
+
+    if request.method == 'POST':
+        name = request.form['name']
+        description = request.form['description']
+        file = request.files['file']
+
+        if not name or not description or not file:
+            return "All fields (name, description, and file) are required.", 400
+
+        if file and allowed_file(file.filename):
+            try:
+                filename = secure_filename(file.filename)
+                file_path = os.path.join(UPLOAD_FOLDER, filename)
+                file.save(file_path)
+
+                new_paper = Paper(
+                    name=name,
+                    description=description,
+                    link=filename,
+                    subject_id=subject.id,
+                    user_id=current_user.id  # 👈 Add this line
+                )
+                db.session.add(new_paper)
+                db.session.commit()
+
+                return redirect(url_for('catalogue_routes.view_papers', subject_name=subject_name))
+            except Exception as e:
+                db.session.rollback()
+                return f"An error occurred while saving the paper: {str(e)}", 500
+        else:
+            return "Invalid file type. Please upload a valid file.", 400
+
+    return render_template('add_paper.html', subject_name=subject_name)
 
 
 # Delete paper route 
@@ -104,8 +102,8 @@ def delete_paper(subject_name, paper_id):
         db.session.rollback()
         return f"Error deleting paper: {str(e)}", 500
 
-# Edit paper route
-@catalogue_routes.route('/edit_paper/<paper_id>', methods=['POST'])
+# Edit Paper Route 
+@catalogue_routes.route('/edit_paper/<int:paper_id>', methods=['POST'])
 def edit_paper(paper_id):
     paper = Paper.query.get(paper_id)
 
@@ -113,9 +111,19 @@ def edit_paper(paper_id):
         return jsonify({'success': False, 'message': 'Paper not found'}), 404
 
     try:
-        paper.name = request.form.get('name')
-        paper.description = request.form.get('description')
+        # Get name and description from form
+        name = request.form.get('name')
+        description = request.form.get('description')
 
+        # Validate name and description
+        if not name or not description:
+            return jsonify({'success': False, 'message': 'Name and description are required'}), 400
+
+        # Update the paper's name and description
+        paper.name = name
+        paper.description = description
+
+        # Handle file upload (if provided)
         if 'file' in request.files:
             file = request.files['file']
             if file and file.filename and allowed_file(file.filename):
@@ -123,22 +131,38 @@ def edit_paper(paper_id):
                 file_path = os.path.join(UPLOAD_FOLDER, filename)
                 file.save(file_path)
                 paper.link = filename
+            elif file.filename:  # Invalid file type case
+                return jsonify({'success': False, 'message': 'Invalid file type'}), 400
 
+        # Commit the changes to the database
         db.session.commit()
 
+        # Log the success response before returning
+        print("Paper updated successfully", paper)
+
+        # Return success response with relevant data
         return jsonify({
             'success': True,
             'message': 'Paper updated successfully',
-            'subject_name': paper.subject.name  # 👈 include this for redirect
+            'paper_id': paper.id,   # Include the paper ID in the response
+            'paper_name': paper.name, # Include updated paper name
+            'paper_description': paper.description, # Include updated description
+            'paper_link': paper.link # Include the link if changed
         }), 200
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'message': str(e)}), 500
+
+        # Log the exception to check what went wrong
+        print(f"Error: {str(e)}")
+
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
 
 
-#Add Subject  route 
+
+# Add Subject route
 @catalogue_routes.route('/add_subject', methods=['GET', 'POST'])
+@login_required  # Ensure the user is logged in
 def add_subject():
     if request.method == 'POST':
         subject_name = request.form['subject_name']
@@ -147,7 +171,8 @@ def add_subject():
         # Create a new subject record using SQLAlchemy
         new_subject = Subject(
             name=subject_name,
-            description=subject_description
+            description=subject_description,
+            user_id=current_user.id  # Associate the subject with the current logged-in user
         )
 
         try:
@@ -156,40 +181,44 @@ def add_subject():
             db.session.commit()
 
             # Redirect to the homepage (or another page)
-            return redirect(url_for('index'))
+            flash("Subject added successfully!")
+            return redirect(url_for('catalogue_routes.index'))  # Ensure correct URL for the index page
 
         except Exception as e:
             db.session.rollback()  # Rollback in case of an error
-            return f"Error adding subject: {str(e)}", 500
+            flash(f"Error adding subject: {str(e)}")
+            return redirect(url_for('catalogue_routes.index'))  # Redirect back to the index page
 
     return render_template('add_subject.html')
 
 
-# Edit subject route
+# Edit Subject Route 
 @catalogue_routes.route('/edit_subject/<subject_id>', methods=['GET', 'POST'])
 def edit_subject(subject_id):
-    # Find the subject by ID
     subject = Subject.query.get(subject_id)
 
     if not subject:
-        return redirect(url_for('index'))
+        return redirect(url_for('catalogue_routes.index'))  # Redirect if subject doesn't exist
 
     if request.method == 'POST':
         try:
             # Update subject details with the new values from the form
-            subject.name = request.form['name']
-            subject.description = request.form['description']
+            subject.name = request.form['subject_name']
+            subject.description = request.form['subject_description']
 
             # Commit the changes to the database
             db.session.commit()
-            return redirect(url_for('index'))
+
+            return redirect(url_for('catalogue_routes.index'))  # Redirect to index after saving changes
 
         except Exception as e:
             db.session.rollback()  # Rollback in case of an error
             return f"Error updating subject: {str(e)}", 500
 
     # For GET requests, render the form pre-filled with the current subject details
-    return render_template('edit_subject.html', subject=subject)
+    return render_template('index.html', subject=subject)
+
+
 
 
 # Delete subject route
@@ -211,4 +240,82 @@ def delete_subject(subject_id):
         return f"Error deleting subject: {str(e)}", 500
 
     # Redirect back to the homepage after deletion
-    return redirect(url_for('index'))
+    return redirect(url_for('catalogue_routes.index'))
+
+
+# Login Route - Handles both login and redirects for logged-in users
+@catalogue_routes.route('/login', methods=['GET', 'POST'])
+def login():
+    # If the user is already logged in, redirect to the index page
+    if current_user.is_authenticated:
+        return redirect(url_for('catalogue_routes.index'))
+
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        # Query the user from the database
+        user = User.query.filter_by(email=email).first()
+
+        if user and user.check_password(password):  # Check if user and password match
+            login_user(user)  # Log the user in
+            print(f"User {user.email} logged in!")  # Debugging line
+            return redirect(url_for('catalogue_routes.index'))  # Redirect to the dashboard
+
+        flash("Invalid login credentials. Please try again.", "error")  # Show error if login fails
+
+    return render_template('login.html')  # Show login form
+
+
+# Make sure the user is logged in before viewing a page 
+@catalogue_routes.route('/')
+@login_required
+def index():
+    # Query the subjects that belong to the logged-in user
+    user_subjects = Subject.query.filter_by(user_id=current_user.id).all()
+    return render_template('index.html', subjects=user_subjects)
+
+
+# Registration route
+@catalogue_routes.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        email = request.form.get('email')  # Get email from form
+        password = request.form.get('password')  # Get password from form
+        confirm_password = request.form.get('confirm_password')  # Get confirm password from form
+
+        form_errors = {}  # Dictionary to hold the form errors
+
+        # Check if the passwords match
+        if password != confirm_password:
+            flash("Passwords do not match. Please try again.", "error")
+            form_errors['password'] = True
+            form_errors['confirm_password'] = True
+            return render_template('register.html', form_errors=form_errors)  # Return form with errors
+
+        hashed_password = generate_password_hash(password)  # Hash the password
+
+        # Check if the email is already registered
+        existing_user = User.query.filter_by(email=email).first()  # Query by email
+        if existing_user:
+            flash("User already exists. Please login.", "error")
+            return redirect(url_for('catalogue_routes.login'))  # Redirect to login if user exists
+
+        # Create new user with email and hashed password
+        new_user = User(email=email, password_hash=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        # Log the user in automatically after registration
+        flash("Registration successful. Please log in.", "success")  # Flash success message
+        return redirect(url_for('catalogue_routes.login'))  # Redirect to login page
+
+    return render_template('register.html')  # Show registration form
+
+
+# Logout route
+@catalogue_routes.route('/logout', methods=['POST'])
+@login_required
+def logout():
+    logout_user()  # Log the user out
+    return redirect(url_for('catalogue_routes.login'))  # Redirect to the login page

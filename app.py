@@ -1,12 +1,32 @@
 from flask import Flask, render_template, send_from_directory, request, redirect
-from models import db, Subject
+from models import db, Subject, User
 from catalogue_routes import catalogue_routes, view_papers
+from flask_login import LoginManager 
 
+# Starting the Flask App
 app = Flask(__name__)
+
+# Secret Key for runtime and cookies 
+app.config['SECRET_KEY'] = '1423'
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///catalogue.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Cascade deletion
+# Initialize LoginManager
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+# Specify login route in the blueprint
+login_manager.login_view = "catalogue_routes.login"  
+login_manager.login_message = "" 
+
+
+# Define the user loader function for Flask-Login
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+# Cascade deletion for SQLlite Database
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 import sqlite3
@@ -18,37 +38,9 @@ def enable_sqlite_foreign_keys(dbapi_connection, connection_record):
         cursor.execute("PRAGMA foreign_keys=ON;")
         cursor.close()
 
-
+# Starting the database
 db.init_app(app)
 
-# Secret Key for runtime and cookies 
-
-app.config['SECRET_KEY'] = '1423'
-
-
-# Home page
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    subjects = Subject.query.all()
-
-    if request.method == 'POST':
-        subject_name = request.form.get('subject_name')
-        subject_description = request.form.get('subject_description')
-        subject_id = request.form.get('subject_id')
-
-        if subject_id:  # Update existing subject
-            subject = Subject.query.get(int(subject_id))
-            if subject:
-                subject.name = subject_name
-                subject.description = subject_description
-        else:  # Create new subject
-            new_subject = Subject(name=subject_name, description=subject_description)
-            db.session.add(new_subject)
-
-        db.session.commit()
-        return redirect('/')
-
-    return render_template('index.html', subjects=subjects)
 
 
 # View all papers in a subject 
@@ -64,12 +56,13 @@ def send_js(path):
 
 
 # Register paper-related routes
-app.register_blueprint(catalogue_routes, url_prefix='/catalog')
+app.register_blueprint(catalogue_routes, url_prefix='')
 
 
 # Create the database tables
 with app.app_context():
     db.create_all()
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -86,21 +86,33 @@ document.addEventListener('DOMContentLoaded', () => {
             const subjectDescription = this.getAttribute("data-description");
 
             // Populate the modal fields with the subject's data
-            document.getElementById("editSubjectId").value = subjectId;
-            document.getElementById("editSubjectName").value = subjectName;
-            document.getElementById("editSubjectDescription").value = subjectDescription;
+            const editSubjectModal = document.getElementById(`editSubjectModal${subjectId}`);
+            const editSubjectName = document.getElementById(`editSubjectName${subjectId}`);
+            const editSubjectDescription = document.getElementById(`editSubjectDescription${subjectId}`);
+
+            editSubjectName.value = subjectName;
+            editSubjectDescription.value = subjectDescription;
 
             // Display the modal
-            editSubjectModal.style.display = "block";
+            if (editSubjectModal) {
+                editSubjectModal.style.display = "block";
+            }
         });
     });
 
     // Close the Edit Subject modal when the close button is clicked
-    if (closeEditSubjectModal) {
-        closeEditSubjectModal.addEventListener("click", function() {
-            editSubjectModal.style.display = "none";
+    const closeButtons = document.querySelectorAll(".close");
+    closeButtons.forEach(closeButton => {
+        closeButton.addEventListener("click", function() {
+            const modalId = this.getAttribute("id").replace("close", "editSubjectModal");
+            const modal = document.getElementById(modalId);
+            
+            if (modal) {
+                modal.style.display = "none";
+            }
         });
-    }
+    });
+
 
     // Paper Modal Elements
     const addPaperModal = document.getElementById("addPaperModal");
@@ -145,7 +157,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(pair[0] + ': ' + pair[1]);
             }
             
-            fetch(`/catalog/edit_paper/${paperId}`, {
+            // Make the POST request to update the paper
+            fetch(`/edit_paper/${paperId}`, {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -180,14 +193,21 @@ document.addEventListener('DOMContentLoaded', () => {
                         const paperCard = editButton.closest('.catalogue-item');
                         const nameElement = paperCard.querySelector('.content h3');
                         const descriptionElement = paperCard.querySelector('.content p');
+                        const fileElement = paperCard.querySelector('.content a'); // Assuming it's a link with class "content"
+
+                        // Update the paper name and description
+                        if (nameElement) nameElement.textContent = data.paper_name;
+                        if (descriptionElement) descriptionElement.textContent = data.paper_description;
                         
-                        // Update the content
-                        if (nameElement) nameElement.textContent = paperName;
-                        if (descriptionElement) descriptionElement.textContent = paperDescription;
+                        // Update the file link if the file has changed
+                        if (fileElement && data.paper_link) {
+                            fileElement.textContent = `Download ${data.paper_link}`;
+                            fileElement.setAttribute('href', `/static/papers/${data.paper_link}`);
+                        }
                         
                         // Update the edit button's onclick attribute
                         editButton.setAttribute('onclick', 
-                            `openEditModal('${paperId}', '${paperName}', '${paperDescription}', '${currentFile}')`
+                            `openEditModal('${data.paper_id}', '${data.paper_name}', '${data.paper_description}', '${data.paper_link}')`
                         );
                     }
                     
@@ -206,6 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
 
     // Add delete functionality to paper buttons
     document.querySelectorAll('.btn-delete-paper').forEach(button => {

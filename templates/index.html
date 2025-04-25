@@ -13,8 +13,11 @@
     <!-- Slider-Specific Styles -->
     <link rel="stylesheet" href="/static/css/slider_styles.css">
 
+    <!-- Slider-Specific Styles -->
+    <link rel="stylesheet" href="/static/css/logout_button.css">
 
-    
+
+
     <title>Study Hub</title>
 </head>
 <body>
@@ -28,7 +31,6 @@
 
         <!-- Add Subject button inside the header -->
         <div class="add-subject-container">
-            <!-- Add Subject button to trigger the modal -->
             <button id="addSubjectBtn" class="btn-add-subject enlarge-on-hover">Add Subject</button>
         </div>
     </header>
@@ -81,8 +83,13 @@
 
     <footer>
         <p>&copy; Study Hub - - Created by Samuel Daason</p>
+        
+        <!-- Logout button -->
+        <form action="{{ url_for('catalogue_routes.logout') }}" method="POST" class="logout-form">
+            <button type="submit" class="btn-logout">Logout</button>
+        </form>
     </footer>
-    
+
     <!-- Modal for Add Subject -->
     <div id="addSubjectModal" class="modal">
         <div class="modal-content">
@@ -96,20 +103,29 @@
         </div>
     </div>
 
+    <!-- Loop through subjects -->
+    {% for subject in subjects %}
     <!-- Modal for Editing Subject -->
-    <div id="editSubjectModal" class="modal">
+    <div id="editSubjectModal{{ subject.id }}" class="modal">
         <div class="modal-content">
-            <span class="close" id="closeEditSubjectModal">&times;</span>
+            <span class="close" id="closeEditSubjectModal{{ subject.id }}">&times;</span>
             <h2>Edit Subject</h2>
-            <form method="POST">
-                <!-- Hidden input for subject_id -->
-                <input type="hidden" name="subject_id" id="editSubjectId">
-                <input type="text" name="subject_name" id="editSubjectName" required>
-                <input type="text" name="subject_description" id="editSubjectDescription" required>
-                <button type="submit">Submit</button>
+            <!-- Form action URL for editing subject -->
+            <form action="{{ url_for('catalogue_routes.edit_subject', subject_id=subject.id) }}" method="POST">
+                <!-- Hidden input for subject_id (no longer necessary as it's part of the URL) -->
+                <input type="hidden" name="subject_id" value="{{ subject.id }}">
+
+                <!-- Input fields to edit subject name and description, pre-filled with existing data -->
+                <input type="text" name="subject_name" id="editSubjectName{{ subject.id }}" value="{{ subject.name }}" required>
+                <textarea name="subject_description" id="editSubjectDescription{{ subject.id }}" required>{{ subject.description }}</textarea>
+                
+                <!-- Submit button to save changes -->
+                <button type="submit">Save Changes</button>
             </form>
         </div>
     </div>
+    {% endfor %}
+
 
     <!-- Link to the JavaScript file -->
     <script src="/scripts/script.js"></script>

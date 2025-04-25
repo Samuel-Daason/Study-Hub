@@ -12,7 +12,7 @@
         <h1>{{ subject_name }} Resources</h1>
 
         <!-- Back to Home link -->
-        <a href="{{ url_for('index') }}" class="back-home-container">
+        <a href="{{ url_for('catalogue_routes.index') }}" class="back-home-container">
             <i class="fas fa-home back-home-icon"></i> <!-- Home icon -->
             <span class="edit-text">Home</span>
         </a>
@@ -123,7 +123,7 @@
                 </div>
 
 
-                <input type="hidden" id="modal-paper-id" name="paper_id">
+                <input type="hidden" id="modal-paper-id">
                 <button type="submit" class="submit-btn">Save Changes</button>
             </form>
         </div>

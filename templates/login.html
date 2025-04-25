@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login_styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Font Awesome -->
+</head>
+<body>
+    <div class="login-container">
+        <h1>Welcome to Study Hub</h1>
+        <p class="subtitle">Please enter your details to log in</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <label for="email">Email</label>
+            <input type="email" name="email" id="email" placeholder="Enter your email" required>
+        
+            <label for="password">Password</label>
+            <div class="password-container">
+                <input type="password" name="password" id="password" placeholder="Enter your password" required>
+                <i class="far fa-eye" id="togglePassword"></i>
+            </div>
+        
+            <button type="submit">Login</button>
+        </form>
+        
+
+        <div class="divider">
+            <span>Don't have an account yet?</span>
+        </div>
+        <div class="register-now">
+            <a href="{{ url_for('catalogue_routes.register') }}">Register now</a>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener("DOMContentLoaded", () => {
+            const flashMessage = document.querySelector(".flash-message.error");
+            if (flashMessage) {
+                const inputs = document.querySelectorAll("input[name='email'], input[name='password']");
+                inputs.forEach(input => input.classList.add("error"));
+                setTimeout(() => {
+                    inputs.forEach(input => input.classList.remove("error"));
+                }, 3000);
+            }
+
+            // Toggle password visibility
+            const togglePassword = document.getElementById("togglePassword");
+            const passwordField = document.getElementById("password");
+
+            togglePassword.addEventListener("click", function () {
+                const type = passwordField.getAttribute("type") === "password" ? "text" : "password";
+                passwordField.setAttribute("type", type);
+                this.classList.toggle("fa-eye-slash");
+            });
+        });
+    </script>
+</body>
+</html>
