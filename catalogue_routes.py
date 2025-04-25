@@ -8,7 +8,16 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, Email, To, Content
 import random
 from datetime import datetime, timedelta
+
 from dotenv import load_dotenv
+import os
+
+# Load env from .env
+load_dotenv()
+# Get the SendGrid API Key from the environment
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+
+
 
 # Define the blueprint
 catalogue_routes = Blueprint('catalogue_routes', __name__)
@@ -354,30 +363,29 @@ def forgot_password():
     return render_template('forgot_password.html')
 
 
-# Send Reset Email Route
-# Load environment variables from .env file
-load_dotenv()
-
-# Fetch the SendGrid API key from the environment variable
-SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
-
+# Send Email Route
 def send_reset_email(to_email, reset_code):
     if not SENDGRID_API_KEY:
-        raise ValueError("SendGrid API Key is not set.")  # Raise an error if the key is not set
-
-    sg = SendGridAPIClient(SENDGRID_API_KEY)  # Use the loaded API key
-    from_email = Email("daasonsamuel@gmail.com")  # Replace with your own email address
-    subject = "Password Reset Request"
-    content = Content("text/plain", f"Here is your password reset code: {reset_code}\nIt will expire in 5 minutes.")
-
-    to_email = To(to_email)
-    mail = Mail(from_email, to_email, subject, content)
+        raise ValueError("SendGrid API Key is not set.")  # Ensure there's a valid key
 
     try:
+        # Create SendGrid client instance
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
+
+        # Set the email details
+        from_email = Email("daasonsamuel@gmail.com")  # Your email here
+        subject = "Password Reset Request"
+        content = Content("text/plain", f"Here is your password reset code: {reset_code}\nIt will expire in 5 minutes.")
+        to_email = To(to_email)
+
+        # Create and send the mail
+        mail = Mail(from_email, to_email, subject, content)
         response = sg.client.mail.send.post(request_body=mail.get())
+
+        # Return the response
         return response
     except Exception as e:
-        print(f"Error sending email: {e}")
+        print(f"Error sending email: {e}")  # Print any exception error message
         return None
 
 
