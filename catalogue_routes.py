@@ -8,7 +8,7 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, Email, To, Content
 import random
 from datetime import datetime, timedelta
-
+from dotenv import load_dotenv
 
 # Define the blueprint
 catalogue_routes = Blueprint('catalogue_routes', __name__)
@@ -355,15 +355,18 @@ def forgot_password():
 
 
 # Send Reset Email Route
-# Use the SendGrid API Key directly in the code
-SENDGRID_API_KEY = "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"  # Directly add the API Key here
+# Load environment variables from .env file
+load_dotenv()
+
+# Fetch the SendGrid API key from the environment variable
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 
 def send_reset_email(to_email, reset_code):
     if not SENDGRID_API_KEY:
-        raise ValueError("SendGrid API Key is not set.")
+        raise ValueError("SendGrid API Key is not set.")  # Raise an error if the key is not set
 
-    sg = SendGridAPIClient(SENDGRID_API_KEY)
-    from_email = Email("daasonsamuel@gmail.com")  # You can use your email address here
+    sg = SendGridAPIClient(SENDGRID_API_KEY)  # Use the loaded API key
+    from_email = Email("daasonsamuel@gmail.com")  # Replace with your own email address
     subject = "Password Reset Request"
     content = Content("text/plain", f"Here is your password reset code: {reset_code}\nIt will expire in 5 minutes.")
 
@@ -376,6 +379,7 @@ def send_reset_email(to_email, reset_code):
     except Exception as e:
         print(f"Error sending email: {e}")
         return None
+
 
 # Verify 6 Digit Code 
 @catalogue_routes.route('/verify_code', methods=['GET', 'POST'])
