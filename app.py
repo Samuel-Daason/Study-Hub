@@ -3,8 +3,11 @@ from models import db, Subject, User
 from catalogue_routes import catalogue_routes, view_papers
 from flask_login import LoginManager 
 
+
 # Starting the Flask App
 app = Flask(__name__)
+
+
 
 # Secret Key for runtime and cookies 
 app.config['SECRET_KEY'] = '1423'

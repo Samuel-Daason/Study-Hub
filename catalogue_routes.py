@@ -4,6 +4,11 @@ import os
 from werkzeug.utils import secure_filename
 from flask_login import login_required, current_user, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, Email, To, Content
+import random
+from datetime import datetime, timedelta
+
 
 # Define the blueprint
 catalogue_routes = Blueprint('catalogue_routes', __name__)
@@ -58,7 +63,7 @@ def add_paper(subject_name):
                     description=description,
                     link=filename,
                     subject_id=subject.id,
-                    user_id=current_user.id  # 👈 Add this line
+                    user_id=current_user.id 
                 )
                 db.session.add(new_paper)
                 db.session.commit()
@@ -319,3 +324,137 @@ def register():
 def logout():
     logout_user()  # Log the user out
     return redirect(url_for('catalogue_routes.login'))  # Redirect to the login page
+
+
+# Forgot Password route 
+@catalogue_routes.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        user = User.query.filter_by(email=email).first()
+
+        if not user:
+            flash("That account doesn't exist.", 'error')
+            return redirect(url_for('catalogue_routes.forgot_password'))
+
+        # Generate a 6-digit reset code
+        reset_code = str(random.randint(100000, 999999))
+
+        # Store the reset code and timestamp
+        user.reset_code = reset_code
+        user.reset_code_sent_at = datetime.utcnow()
+        db.session.commit()
+
+        # Send the reset email with the reset code
+        send_reset_email(user.email, reset_code)
+
+        # flash('A password reset link has been sent to that email adress.', 'info')  # Removed as requested
+        return redirect(url_for('catalogue_routes.verify_code', email=email))
+
+    return render_template('forgot_password.html')
+
+
+# Send Reset Email Route
+# Use the SendGrid API Key directly in the code
+SENDGRID_API_KEY = "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"  # Directly add the API Key here
+
+def send_reset_email(to_email, reset_code):
+    if not SENDGRID_API_KEY:
+        raise ValueError("SendGrid API Key is not set.")
+
+    sg = SendGridAPIClient(SENDGRID_API_KEY)
+    from_email = Email("daasonsamuel@gmail.com")  # You can use your email address here
+    subject = "Password Reset Request"
+    content = Content("text/plain", f"Here is your password reset code: {reset_code}\nIt will expire in 5 minutes.")
+
+    to_email = To(to_email)
+    mail = Mail(from_email, to_email, subject, content)
+
+    try:
+        response = sg.client.mail.send.post(request_body=mail.get())
+        return response
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        return None
+
+# Verify 6 Digit Code 
+@catalogue_routes.route('/verify_code', methods=['GET', 'POST'])
+def verify_code():
+    email = request.args.get('email')
+    user = User.query.filter_by(email=email).first()
+
+    if not user:
+        flash("Invalid or expired reset link.", "error")
+        return redirect(url_for('catalogue_routes.forgot_password'))
+
+    if request.method == 'POST':
+        code_entered = request.form.get('reset_code')
+
+        if user.reset_code != code_entered:
+            flash("Incorrect code.", "error")
+        elif datetime.utcnow() > user.reset_code_sent_at + timedelta(minutes=5):
+            flash("Code expired. Please resend.", "error")
+        else:
+            flash("Code verified! You may now reset your password.", "success")
+            return redirect(url_for('catalogue_routes.reset_password', email=email))
+
+    return render_template('verify_code.html', email=email)
+
+
+# Resend Code Route
+@catalogue_routes.route('/resend_code')
+def resend_code():
+    email = request.args.get('email')
+    user = User.query.filter_by(email=email).first()
+
+    if not user:
+        flash("That account doesn't exist.", 'error')
+        return redirect(url_for('catalogue_routes.forgot_password'))
+
+    # Check if the previous reset code has expired
+    if datetime.utcnow() > user.reset_code_sent_at + timedelta(minutes=5):
+        # Generate a new reset code and update timestamp
+        reset_code = str(random.randint(100000, 999999))
+        user.reset_code = reset_code
+        user.reset_code_sent_at = datetime.utcnow()
+        db.session.commit()
+
+        # Resend the email
+        send_reset_email(user.email, reset_code)
+        flash("A new code has been sent to your email.", 'info')
+    else:
+        flash("Please wait before requesting a new code.", 'warning')
+
+    return redirect(url_for('catalogue_routes.verify_code', email=email))
+
+
+
+# Reset Password Route
+@catalogue_routes.route('/reset_password', methods=['GET', 'POST'])
+def reset_password():
+    email = request.args.get('email')
+    user = User.query.filter_by(email=email).first()
+
+    if not user:
+        flash("Invalid reset attempt.", 'error')
+        return redirect(url_for('catalogue_routes.forgot_password'))
+
+    if request.method == 'POST':
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+
+        if password != confirm_password:
+            flash("Passwords do not match.", 'error')
+            return redirect(url_for('catalogue_routes.reset_password', email=email))
+
+        # Use set_password to hash the password
+        user.set_password(password)
+        user.reset_code = None
+        user.reset_code_sent_at = None
+        db.session.commit()
+
+        flash("Your password has been reset. You can now log in.", 'success')
+        return redirect(url_for('catalogue_routes.login'))
+
+    return render_template('reset_password.html', email=email)
+

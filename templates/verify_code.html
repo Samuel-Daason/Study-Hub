@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Reset Code</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login_styles.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <h1>Verify Reset Code</h1>
+        <p class="subtitle">Enter the 6-digit code sent to your email. It expires in 5 minutes.</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('catalogue_routes.verify_code', email=email) }}">
+            <label for="reset_code">Reset Code</label>
+            <input type="text" id="reset_code" name="reset_code" placeholder="Enter 6-digit code" required maxlength="6">
+            
+            <button type="submit">Verify Code</button>
+        </form>
+
+        <div class="divider">
+            <span>Didn't get the code?</span>
+        </div>
+
+        <!-- Resend Code Link -->
+        <div class="register-now">
+            <a href="{{ url_for('catalogue_routes.resend_code', email=email) }}">Resend Code</a>
+        </div>        
+        
+    </div>
+</body>
+</html>
