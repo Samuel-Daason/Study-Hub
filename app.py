@@ -1,9 +1,8 @@
-from flask import Flask, render_template, send_from_directory, request, redirect
-from models import db, Subject, User
+from flask import Flask, send_from_directory
+from models import db, User
 from catalogue_routes import catalogue_routes, view_papers
 from flask_login import LoginManager
 from dotenv import load_dotenv
-import os
 
 # Load environment variables from .env
 load_dotenv()
@@ -29,7 +28,7 @@ login_manager.login_message = ""
 # Define the user loader function for Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 # Cascade deletion for SQLite Database
 from sqlalchemy import event

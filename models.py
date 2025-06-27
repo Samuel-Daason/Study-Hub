@@ -12,7 +12,6 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     
-    # Add reset_code and reset_code_sent_at fields
     reset_code = db.Column(db.String(6), nullable=True)
     reset_code_sent_at = db.Column(db.DateTime, nullable=True)
 
@@ -23,7 +22,6 @@ class User(db.Model, UserMixin):
         return check_password_hash(self.password_hash, password)
 
 
-
 # Subject model
 class Subject(db.Model):
     __tablename__ = 'subject'
@@ -32,14 +30,12 @@ class Subject(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
 
-    # Foreign key to User
     user_id = db.Column(
         db.Integer,
         db.ForeignKey('user.id', ondelete='CASCADE'),
         nullable=False
     )
 
-    # Relationship with Paper
     papers = db.relationship(
         'Paper',
         backref='subject',
@@ -61,19 +57,55 @@ class Paper(db.Model):
     description = db.Column(db.Text, nullable=False)
     link = db.Column(db.String(200), nullable=False)
 
-    # Foreign key to Subject
     subject_id = db.Column(
         db.Integer,
         db.ForeignKey('subject.id', ondelete='CASCADE'),
         nullable=False
     )
 
-    # Foreign key to User
     user_id = db.Column(
         db.Integer,
         db.ForeignKey('user.id', ondelete='CASCADE'),
         nullable=False
     )
 
+    # Relationship to PaperNote with cascade delete
+    notes = db.relationship(
+        'PaperNote',
+        back_populates='paper',
+        lazy=True,
+        cascade='all, delete-orphan',
+        passive_deletes=True
+    )
+
     def __repr__(self):
         return f'<Paper {self.name}>'
+
+
+# PaperNote model
+class PaperNote(db.Model):
+    __tablename__ = 'paper_note'
+
+    id = db.Column(db.Integer, primary_key=True)
+    time_spent = db.Column(db.Integer)
+    score = db.Column(db.Integer)
+    difficult_questions = db.Column(db.Text)
+    difficulty_rating = db.Column(db.Integer)
+
+    paper_id = db.Column(
+        db.Integer,
+        db.ForeignKey('paper.id', ondelete='CASCADE'),
+        nullable=False
+    )
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('user.id', ondelete='CASCADE'),
+        nullable=False
+    )
+
+    # Relationships with back_populates to avoid conflicts
+    paper = db.relationship('Paper', back_populates='notes')
+    user = db.relationship('User', backref=db.backref('notes', lazy=True))
+
+    def __repr__(self):
+        return f'<PaperNote {self.id} for Paper {self.paper_id}>'

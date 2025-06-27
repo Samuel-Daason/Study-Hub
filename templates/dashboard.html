@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Link to Font Awesome for Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
+    <!-- Dashboard-specific styles -->
+    <link rel="stylesheet" href="/static/css/dashboard_styles.css">
+
+    <title>Dashboard - Study Hub</title>
+</head>
+<body>
+    <header>
+        <h1>Dashboard</h1>
+
+        <!-- Navigation buttons -->
+        <div class="dashboard-nav">
+            <a href="{{ url_for('catalogue_routes.index') }}" class="btn-nav">
+                <i class="fas fa-home"></i> Home
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <section class="dashboard-content">
+            <h2>Your Subjects Overview</h2>
+
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Number of Papers</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for subject in subject_data %}
+                    <tr>
+                        <td>{{ subject.name }}</td>
+                        <td>{{ subject.paper_count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; Study Hub - Created by Samuel Daason</p>
+    </footer>
+</body>
+</html>

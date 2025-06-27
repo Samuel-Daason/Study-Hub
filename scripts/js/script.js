@@ -249,3 +249,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+// Add Paper Note Modal Elements
+const addPaperNoteModal = document.getElementById("addPaperNoteModal");
+const closeAddPaperNoteModal = document.getElementById("closeAddPaperNoteModal");
+
+// Function to open Add Paper Note modal
+function openAddPaperNoteModal(paperId) {
+    const modal = document.getElementById('addPaperNoteModal');
+    if (!modal) return;
+
+    // Set the paper ID for the note
+    document.querySelector('input[name="paper_id"]').value = paperId;
+
+    // Open the modal
+    modal.style.display = "block";
+}
+
+// Event listener for closing Add Paper Note modal
+if (closeAddPaperNoteModal) {
+    closeAddPaperNoteModal.onclick = function() {
+        addPaperNoteModal.style.display = "none";
+    };
+}
+
+// Close modals when clicking outside (for specific modals)
+window.addEventListener('click', function(event) {
+    if (event.target === addPaperNoteModal) {
+        addPaperNoteModal.style.display = 'none';
+    }
+});

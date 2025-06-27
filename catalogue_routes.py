@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash, Request
-from models import db, Subject, Paper, User
+from models import db, Subject, Paper, User, PaperNote
 import os
 from werkzeug.utils import secure_filename
 from flask_login import login_required, current_user, login_user, logout_user
@@ -373,7 +373,7 @@ def send_reset_email(to_email, reset_code):
         sg = SendGridAPIClient(SENDGRID_API_KEY)
 
         # Set the email details
-        from_email = Email("daasonsamuel@gmail.com")  # Your email here
+        from_email = Email("sdaason@students.rj.nsw.edu.au")
         subject = "Password Reset Request"
         content = Content("text/plain", f"Here is your password reset code: {reset_code}\nIt will expire in 5 minutes.")
         to_email = To(to_email)
@@ -470,3 +470,60 @@ def reset_password():
 
     return render_template('reset_password.html', email=email)
 
+
+#Dashbaord Route
+@catalogue_routes.route('/dashboard')
+@login_required
+def dashboard():
+    # Only get subjects that belong to the current user
+    subjects = Subject.query.filter_by(user_id=current_user.id).all()
+
+    subject_data = []
+    for subject in subjects:
+        # Count papers linked to each subject
+        paper_count = Paper.query.filter_by(subject_id=subject.id, user_id=current_user.id).count()
+        subject_data.append({
+            'name': subject.name,
+            'paper_count': paper_count
+        })
+
+    return render_template('dashboard.html', subject_data=subject_data)
+
+
+# Add Notes Route
+@catalogue_routes.route('/add_note', methods=['POST'])
+@login_required
+def add_note():
+    paper_id = request.form.get('paper_id')
+    time_spent = request.form.get('time_spent')
+    score = request.form.get('score')
+    difficulty_rating = request.form.get('difficulty_rating')
+    difficult_questions = request.form.get('difficult_questions')
+
+    if not all([paper_id, time_spent, score, difficulty_rating]):
+        # No flash here, just redirect
+        return redirect(url_for('catalogue_routes.index'))
+
+    try:
+        note = PaperNote(
+            user_id=current_user.id,
+            paper_id=int(paper_id),
+            time_spent=int(time_spent),
+            score=int(score),
+            difficulty_rating=int(difficulty_rating),
+            difficult_questions=difficult_questions
+        )
+        db.session.add(note)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print(e)
+
+    # Lookup the paper to get its subject name for redirect
+    paper = Paper.query.get(int(paper_id))
+    if paper:
+        subject = Subject.query.get(paper.subject_id)
+        if subject:
+            return redirect(url_for('catalogue_routes.view_papers', subject_name=subject.name))
+    # Fallback redirect
+    return redirect(url_for('catalogue_routes.index'))

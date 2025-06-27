@@ -844,3 +844,20 @@ body.dark-mode .modal-body p {
     opacity: 1;
     visibility: visible;
 }
+
+/* Dashboard Button */
+.btn-dashboard {
+    padding: 10px 20px;
+    background-color: #4CAF50; /* Nice green */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+.btn-dashboard:hover {
+    background-color: #45a049;
+}

@@ -29,8 +29,9 @@
             <span class="slider"></span>
         </label>
 
-        <!-- Add Subject button inside the header -->
+        <!-- Container for Add Subject and Dashboard buttons -->
         <div class="add-subject-container">
+            <a href="{{ url_for('catalogue_routes.dashboard') }}" class="btn-dashboard enlarge-on-hover">Dashboard</a>
             <button id="addSubjectBtn" class="btn-add-subject enlarge-on-hover">Add Subject</button>
         </div>
     </header>
