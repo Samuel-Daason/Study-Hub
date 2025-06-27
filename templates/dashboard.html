@@ -1,54 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Link to Font Awesome for Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
 
-    <!-- Dashboard-specific styles -->
-    <link rel="stylesheet" href="/static/css/dashboard_styles.css">
+  <!-- Dashboard styles -->
+  <link rel="stylesheet" href="/static/css/dashboard_styles.css" />
 
-    <title>Dashboard - Study Hub</title>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <title>Dashboard - Study Hub</title>
 </head>
 <body>
-    <header>
-        <h1>Dashboard</h1>
+  <header>
+    <h1>Dashboard</h1>
 
-        <!-- Navigation buttons -->
-        <div class="dashboard-nav">
-            <a href="{{ url_for('catalogue_routes.index') }}" class="btn-nav">
-                <i class="fas fa-home"></i> Home
-            </a>
-        </div>
-    </header>
+    <div class="dashboard-nav">
+      <a href="{{ url_for('catalogue_routes.index') }}" class="btn-nav">
+        <i class="fas fa-home"></i> Home
+      </a>
+    </div>
+  </header>
 
-    <main>
-        <section class="dashboard-content">
-            <h2>Your Subjects Overview</h2>
+  <main>
+    <!-- Filter bar: horizontal, top right below header -->
+    <form method="get" id="filter-form" class="dashboard-filters">
+      <span class="filter-label">Filter by</span>
 
-            <table class="dashboard-table">
-                <thead>
-                    <tr>
-                        <th>Subject</th>
-                        <th>Number of Papers</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for subject in subject_data %}
-                    <tr>
-                        <td>{{ subject.name }}</td>
-                        <td>{{ subject.paper_count }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </section>
-    </main>
+      <div class="filter-group">
+        <label for="subject-filter" class="visually-hidden">Filter by Subject</label>
+        <select id="subject-filter" name="subject-filter" onchange="document.getElementById('filter-form').submit();">
+          <option value="all" {% if selected_subject == 'all' %}selected{% endif %}>All Subjects</option>
+          {% for subject in subject_data %}
+            <option value="{{ subject.name }}" {% if selected_subject == subject.name %}selected{% endif %}>
+              {{ subject.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
 
-    <footer>
-        <p>&copy; Study Hub - Created by Samuel Daason</p>
-    </footer>
+      <div class="filter-group">
+        <label for="timeframe-filter" class="visually-hidden">Filter by Timeframe</label>
+        <select id="timeframe-filter" name="timeframe-filter" onchange="document.getElementById('filter-form').submit();">
+          <option value="10" {% if timeframe_days == 10 %}selected{% endif %}>10 days</option>
+          <option value="30" {% if timeframe_days == 30 %}selected{% endif %}>30 days</option>
+          <option value="90" {% if timeframe_days == 90 %}selected{% endif %}>90 days</option>
+        </select>
+      </div>
+    </form>
+
+    <!-- Stats boxes -->
+    <section class="dashboard-stats">
+      <div class="stat-box total-papers">
+        <h2>{{ total_papers }}</h2>
+        <p>Total Papers</p>
+      </div>
+      <div class="stat-box completed-papers">
+        <h2>{{ completed_papers }}</h2>
+        <p>Completed Papers</p>
+      </div>
+      <div class="stat-box total-hours">
+        <h2>{{ total_hours }}</h2>
+        <p>Total Hours Spent</p>
+      </div>
+    </section>
+
+    <!-- Chart Section -->
+    <section class="dashboard-content">
+      <h2>Study Activity Over Time</h2>
+      <canvas id="studyChart" style="max-width: 100%; height: 400px;"></canvas>
+    </section>
+
+    <!-- Existing Subjects Overview -->
+    <section class="dashboard-content">
+      <h2>Your Subjects Overview</h2>
+
+      <table class="dashboard-table">
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>Number of Papers</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for subject in subject_data %}
+          <tr>
+            <td>{{ subject.name }}</td>
+            <td>{{ subject.paper_count }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; Study Hub - Created by Samuel Daason</p>
+  </footer>
+
+  <script>
+    const ctx = document.getElementById('studyChart').getContext('2d');
+
+    const chartData = {
+      labels: {{ chart_labels|tojson|safe }},
+      datasets: {{ chart_datasets|tojson|safe }}
+    };
+
+    const config = {
+      type: 'bar',
+      data: chartData,
+      options: {
+        responsive: true,
+        interaction: {
+          mode: 'nearest',
+          axis: 'x',
+          intersect: false,
+        },
+        plugins: {
+          tooltip: {
+            enabled: true,
+            callbacks: {
+              label: function(context) {
+                return context.dataset.label + ': ' + context.parsed.y;
+              }
+            }
+          },
+          legend: {
+            position: 'top',
+          }
+        },
+        scales: {
+          x: {
+            stacked: true,
+            title: {
+              display: true,
+              text: 'Date',
+              color: 'white',           // Make axis title white
+              font: {
+                size: 14,
+                weight: 'bold',        // More prominent font weight
+              }
+            },
+            ticks: {
+              color: 'white',           // Make tick labels white
+              font: {
+                size: 12,
+                weight: 'bold',        // More prominent font weight
+              }
+            }
+          },
+          y: {
+            stacked: true,
+            title: {
+              display: true,
+              text: 'Value',
+              color: 'white',           // Make axis title white
+              font: {
+                size: 14,
+                weight: 'bold',
+              }
+            },
+            ticks: {
+              color: 'white',           // Make tick labels white
+              font: {
+                size: 12,
+                weight: 'bold',
+              }
+            },
+            beginAtZero: true
+          }
+        }
+      }
+    };
+
+
+    new Chart(ctx, config);
+  </script>
+
 </body>
 </html>

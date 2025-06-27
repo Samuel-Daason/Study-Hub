@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -81,7 +82,6 @@ class Paper(db.Model):
     def __repr__(self):
         return f'<Paper {self.name}>'
 
-
 # PaperNote model
 class PaperNote(db.Model):
     __tablename__ = 'paper_note'
@@ -91,6 +91,8 @@ class PaperNote(db.Model):
     score = db.Column(db.Integer)
     difficult_questions = db.Column(db.Text)
     difficulty_rating = db.Column(db.Integer)
+    
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)  # New field
 
     paper_id = db.Column(
         db.Integer,

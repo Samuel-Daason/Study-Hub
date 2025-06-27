@@ -12,6 +12,9 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import os
 
+from sqlalchemy import func 
+from collections import defaultdict
+
 # Load env from .env
 load_dotenv()
 # Get the SendGrid API Key from the environment
@@ -470,26 +473,6 @@ def reset_password():
 
     return render_template('reset_password.html', email=email)
 
-
-#Dashbaord Route
-@catalogue_routes.route('/dashboard')
-@login_required
-def dashboard():
-    # Only get subjects that belong to the current user
-    subjects = Subject.query.filter_by(user_id=current_user.id).all()
-
-    subject_data = []
-    for subject in subjects:
-        # Count papers linked to each subject
-        paper_count = Paper.query.filter_by(subject_id=subject.id, user_id=current_user.id).count()
-        subject_data.append({
-            'name': subject.name,
-            'paper_count': paper_count
-        })
-
-    return render_template('dashboard.html', subject_data=subject_data)
-
-
 # Add Notes Route
 @catalogue_routes.route('/add_note', methods=['POST'])
 @login_required
@@ -527,3 +510,124 @@ def add_note():
             return redirect(url_for('catalogue_routes.view_papers', subject_name=subject.name))
     # Fallback redirect
     return redirect(url_for('catalogue_routes.index'))
+
+#Dashbaord Route
+@catalogue_routes.route('/dashboard')
+@login_required
+def dashboard():
+    selected_subject = request.args.get('subject-filter', default='all')
+    timeframe_days = request.args.get('timeframe-filter', default='30')
+
+    try:
+        timeframe_days = int(timeframe_days)
+    except ValueError:
+        timeframe_days = 30
+
+    time_threshold = datetime.utcnow() - timedelta(days=timeframe_days)
+
+    # Subjects and paper counts for table
+    subjects = Subject.query.filter_by(user_id=current_user.id).all()
+    subject_data = []
+    for subject in subjects:
+        paper_count = Paper.query.filter_by(subject_id=subject.id, user_id=current_user.id).count()
+        subject_data.append({
+            'name': subject.name,
+            'paper_count': paper_count
+        })
+
+    # Filter papers by subject if needed
+    papers_query = Paper.query.filter_by(user_id=current_user.id)
+    if selected_subject != 'all':
+        papers_query = papers_query.join(Subject).filter(Subject.name == selected_subject)
+    total_papers = papers_query.count()
+
+    # Completed papers count
+    completed_papers_query = (
+        db.session.query(Paper.id)
+        .join(Paper.notes)
+        .filter(Paper.user_id == current_user.id)
+        .filter(PaperNote.user_id == current_user.id)
+        .filter(PaperNote.time_spent.isnot(None))
+        .filter(PaperNote.created_at >= time_threshold)
+    )
+    if selected_subject != 'all':
+        completed_papers_query = completed_papers_query.join(Paper.subject).filter(Subject.name == selected_subject)
+    completed_papers = completed_papers_query.distinct().count()
+
+    # Total hours spent (in hours)
+    total_hours_query = (
+        db.session.query(func.coalesce(func.sum(PaperNote.time_spent), 0))
+        .filter(PaperNote.user_id == current_user.id)
+        .filter(PaperNote.created_at >= time_threshold)
+    )
+    if selected_subject != 'all':
+        total_hours_query = total_hours_query.join(PaperNote.paper).join(Paper.subject).filter(Subject.name == selected_subject)
+    total_hours = total_hours_query.scalar()
+    total_hours = round(total_hours / 60, 2)  # convert mins to hrs
+
+    # --- New: Prepare chart data for bar graph ---
+
+    # Query notes filtered by user and timeframe
+    notes_query = PaperNote.query.join(PaperNote.paper).join(Paper.subject).filter(
+        PaperNote.user_id == current_user.id,
+        PaperNote.created_at >= time_threshold,
+    )
+    if selected_subject != 'all':
+        notes_query = notes_query.filter(Subject.name == selected_subject)
+    notes = notes_query.all()
+
+    # Structure data: {subject: {date: {'time_spent': x, 'score': y}}}
+    subject_chart_data = defaultdict(lambda: defaultdict(lambda: {'time_spent': 0, 'score': 0}))
+    all_dates = set()
+
+    for note in notes:
+        subj = note.paper.subject.name
+        date_str = note.created_at.strftime('%Y-%m-%d')
+        all_dates.add(date_str)
+
+        subject_chart_data[subj][date_str]['time_spent'] += (note.time_spent or 0) / 60
+        subject_chart_data[subj][date_str]['score'] += note.score or 0
+
+    sorted_dates = sorted(all_dates)
+
+    # Predefined colours for subjects
+    predefined_colours = [
+        'rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)',
+        'rgba(255, 206, 86, 0.6)', 'rgba(75, 192, 192, 0.6)',
+        'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)'
+    ]
+
+    chart_labels = sorted_dates
+    chart_datasets = []
+
+    for idx, (subj, date_vals) in enumerate(subject_chart_data.items()):
+        colour = predefined_colours[idx % len(predefined_colours)]
+        time_data = [round(date_vals[date]['time_spent'], 2) for date in sorted_dates]
+        score_data = [date_vals[date]['score'] for date in sorted_dates]
+
+        # Time spent dataset (solid colour)
+        chart_datasets.append({
+            'label': f'{subj} - Time (hrs)',
+            'data': time_data,
+            'backgroundColor': colour,
+            'stack': 'time'
+        })
+        # Questions completed dataset (lighter colour)
+        chart_datasets.append({
+            'label': f'{subj} - Questions',
+            'data': score_data,
+            'backgroundColor': colour.replace('0.6', '0.3'),
+            'stack': 'questions'
+        })
+
+    return render_template(
+        'dashboard.html',
+        subject_data=subject_data,
+        total_papers=total_papers,
+        completed_papers=completed_papers,
+        total_hours=total_hours,
+        selected_subject=selected_subject,
+        timeframe_days=timeframe_days,
+        chart_labels=chart_labels,
+        chart_datasets=chart_datasets
+    )
